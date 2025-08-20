@@ -1,0 +1,5 @@
+{
+    "yaml.schemas": {
+        "https://www.schemastore.org/yamllint.json": "file:///home/anatolii-shara/Documents/kubernetes-ai-prompts/yaml/app-secret-env.yaml"
+    }
+}
