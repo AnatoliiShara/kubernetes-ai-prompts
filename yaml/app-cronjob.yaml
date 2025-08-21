@@ -1,18 +1,40 @@
+---
 apiVersion: batch/v1
 kind: CronJob
 metadata:
-  name: hello-cronjob
+  name: go-demo-app-cronjob
+  labels:
+    app: go-demo-app-cronjob
 spec:
-  schedule: "*/1 * * * *"
+  schedule: "30 2 * * *"
   jobTemplate:
     spec:
       template:
         spec:
           containers:
-          - name: hello
-            image: busybox:latest
-            args:
-            - /bin/sh
-            - -c
-            - "echo Hello from Kubernetes CronJob at $(date)"
+            - name: go-demo-app-batch
+              image: go-demo-app:latest
+              command:
+                - /bin/sh
+                - -c
+                - echo "Running batch job"
+          restartPolicy: OnFailure
+---
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: go-demo-app-backup
+  labels:
+    app: go-demo-app-backup
+spec:
+  schedule: "0 1 * * 0"
+  jobTemplate:
+    spec:
+      template:
+        spec:
+          containers:
+            - name: backup-job
+              image: go-demo-app:latest
+              command:
+                - ./backup.sh
           restartPolicy: OnFailure

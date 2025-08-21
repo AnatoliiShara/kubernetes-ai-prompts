@@ -1,13 +1,46 @@
+---
 apiVersion: batch/v1
 kind: Job
 metadata:
-  name: hello-job
+  name: go-demo-app-migration
+  labels:
+    app: go-demo-app-job
 spec:
   template:
     spec:
       containers:
-      - name: hello
-        image: busybox:latest
-        command: ["/bin/sh", "-c", "echo Hello from Kubernetes Job!"]
+        - name: migration-job
+          image: go-demo-app:latest
+          command:
+            - /bin/sh
+            - -c
+            - echo "Running migration"
       restartPolicy: Never
-  backoffLimit: 2
+---
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: go-demo-app-data-import
+  labels:
+    app: go-demo-app-job
+spec:
+  completions: 3
+  parallelism: 2
+  template:
+    spec:
+      containers:
+        - name: data-import-job
+          image: go-demo-app:latest
+          command:
+            - ./import-data.sh
+      restartPolicy: Never
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: go-demo-app-secrets
+  labels:
+    app: go-demo-app-job
+type: Opaque
+data:
+  database_url: cG9zdGdyZXNxbDovL3VzZXI6cGFzcw==

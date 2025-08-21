@@ -1,27 +1,67 @@
+---
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: nginx-deployment-liveness
+  name: go-demo-app-liveness
+  namespace: default
   labels:
-    app: nginx-liveness
+    app: go-demo-app-liveness
+    version: v1.0.0
+    environment: production
 spec:
-  replicas: 1
+  replicas: 3
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxUnavailable: 1
+      maxSurge: 1
   selector:
     matchLabels:
-      app: nginx-liveness
+      app: go-demo-app-liveness
   template:
     metadata:
       labels:
-        app: nginx-liveness
+        app: go-demo-app-liveness
+        version: v1.0.0
     spec:
       containers:
-      - name: nginx
-        image: nginx:latest
-        ports:
-        - containerPort: 80
-        livenessProbe:
-          httpGet:
-            path: /
-            port: 80
-          initialDelaySeconds: 5
-          periodSeconds: 10
+        - name: go-demo-app
+          image: go-demo-app:latest
+          ports:
+            - containerPort: 8080
+              name: http
+              protocol: TCP
+          env:
+            - name: PORT
+              value: "8080"
+            - name: APP_ENV
+              value: "production"
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: 8080
+              scheme: HTTP
+            initialDelaySeconds: 30
+            periodSeconds: 10
+            timeoutSeconds: 5
+            successThreshold: 1
+            failureThreshold: 3
+      restartPolicy: Always
+      terminationGracePeriodSeconds: 30
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: go-demo-app-liveness-service
+  namespace: default
+  labels:
+    app: go-demo-app-liveness
+spec:
+  type: ClusterIP
+  ports:
+    - port: 80
+      targetPort: 8080
+      protocol: TCP
+      name: http
+  selector:
+    app: go-demo-app-liveness
