@@ -43,18 +43,3 @@ spec:
       volumes:
         - name: shared-logs
           emptyDir: {}
----
-apiVersion: v1
-kind: Service
-metadata:
-  name: go-demo-app-multicontainer-service
-  labels:
-    app: go-demo-app-multicontainer
-spec:
-  selector:
-    app: go-demo-app-multicontainer
-  ports:
-    - port: 80
-      targetPort: 8080
-    - port: 9100
-      targetPort: 9100
